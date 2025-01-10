@@ -9,6 +9,7 @@ export interface Video {
 
 export interface Chat {
   vpos: number;
+  posted_at: Date;
   user_id: string;
   message: string;
 }

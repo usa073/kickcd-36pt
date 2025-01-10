@@ -1,5 +1,9 @@
 import { build } from "./ass";
-import { download_comments, info_from_url, randomize } from "./download";
+import {
+  download_comments_parallel,
+  info_from_url,
+  randomize,
+} from "./download";
 
 const save = function (filename: string, s: string) {
   const blob = new Blob([s], { type: "text/plain" });
@@ -36,7 +40,7 @@ const remove_downloading = function () {
   try {
     show_downloading();
     const info = await info_from_url(window.location.href);
-    const comments = await download_comments(info);
+    const comments = await download_comments_parallel(info);
     const randomizedComments = randomize(comments);
     const ass = build(randomizedComments);
     save(`${info.livestream.session_title}.ass`, ass);

@@ -1,3 +1,4 @@
+import retry from "async-retry";
 import type { Chat, Video } from "./types";
 
 const get_json = async function (url: string) {
@@ -30,12 +31,13 @@ export const download_comments = async function (
     const url =
       `https://kick.com/api/v2/channels/${info.livestream.channel_id}/messages?` +
       `start_time=${t.toISOString()}`;
+    const res = await retry(async () => await get_json(url));
     const chats: {
       content: string;
       created_at: string;
       id: string;
       user_id: number;
-    }[] = (await get_json(url)).data.messages;
+    }[] = res.data.messages;
     let new_chat = false;
     for (const chat of chats) {
       if (ids[chat.id]) {
@@ -63,6 +65,70 @@ export const download_comments = async function (
     }
   }
   return list;
+};
+
+async function limit<T>(tasks: (() => Promise<T>)[], concurrency: number) {
+  const results: T[] = [];
+  const tasksIterator = tasks.entries();
+
+  await Promise.all(
+    Array.from({ length: concurrency }).map(async () => {
+      for (const [index, task] of tasksIterator) {
+        results[index] = await task();
+      }
+    })
+  );
+
+  return results;
+}
+
+export const download_comments_parallel = async function (info: Video) {
+  const start_at = new Date(info.livestream.start_time);
+  const end_at = new Date(start_at.getTime() + info.livestream.duration);
+  const downloads = Array.from(
+    {
+      length: Math.ceil((end_at.getTime() - start_at.getTime()) / 5000),
+    },
+    (_, i) => i
+  );
+  const list: Chat[] = [];
+  const ids = new Set<string>();
+
+  const tasks = downloads.map((i) => async () => {
+    const t = new Date(start_at.getTime() + 5000 * i);
+    const url =
+      `https://kick.com/api/v2/channels/${info.livestream.channel_id}/messages?` +
+      `start_time=${t.toISOString()}`;
+    const res = await retry(async () => await get_json(url));
+    const chats: {
+      content: string;
+      created_at: string;
+      id: string;
+      user_id: number;
+    }[] = res.data.messages;
+
+    for (const chat of chats) {
+      if (ids.has(chat.id)) {
+        continue;
+      }
+      ids.add(chat.id);
+      const posted_at = new Date(chat.created_at);
+      const vpos = (posted_at.getTime() - start_at.getTime()) / 10;
+      if (vpos < 0) {
+        continue;
+      }
+      const user_id = chat.user_id.toString();
+      list.push({ vpos, posted_at, user_id, message: chat.content });
+    }
+  });
+
+  await limit(tasks, 10);
+
+  const sortedList = list.toSorted(
+    (a, b) => a.posted_at.getTime() - b.posted_at.getTime()
+  );
+
+  return sortedList;
 };
 
 export const randomize = function (list: Chat[]) {
