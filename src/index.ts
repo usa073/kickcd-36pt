@@ -37,9 +37,9 @@ const remove_downloading = function () {
     show_downloading();
     const info = await info_from_url(window.location.href);
     const comments = await download_comments(info);
-    randomize(comments);
-    const ass = build(comments);
-    save(`${info.title}.ass`, ass);
+    const randomizedComments = randomize(comments);
+    const ass = build(randomizedComments);
+    save(`${info.livestream.session_title}.ass`, ass);
     return remove_downloading();
   } catch (e) {
     remove_downloading();

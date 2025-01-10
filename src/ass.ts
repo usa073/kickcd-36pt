@@ -80,7 +80,11 @@ const collision_at_end = function (first: Chat, second: Chat, opt: Options) {
   return second_pos_when_first_ends - WIDTH;
 };
 
-const collision = function (first: Chat | null, second: Chat, opt: Options) {
+const collision = function (
+  first: Chat | null | undefined,
+  second: Chat,
+  opt: Options
+) {
   if (!first) {
     return 0;
   }
@@ -114,7 +118,7 @@ const build_events = function (list: Chat[], opt: Options) {
     (HEIGHT + opt.margin - lineheight / 2) / lineheight
   );
   const n_rows = n_normal_rows + n_wrap_rows;
-  const item_in_row: Array<Chat | null> = Array.from(
+  const item_in_row: (Chat | null)[] = Array.from(
     { length: n_rows },
     () => null
   );

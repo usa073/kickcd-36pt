@@ -1,3 +1,12 @@
+export interface Video {
+  livestream: {
+    channel_id: number;
+    session_title: string;
+    start_time: string;
+    duration: number;
+  };
+}
+
 export interface Chat {
   vpos: number;
   user_id: string;
