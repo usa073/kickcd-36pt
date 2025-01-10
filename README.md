@@ -1,15 +1,97 @@
-# kickcd
+# orcd
 
-To install dependencies:
+[![npm version](https://badge.fury.io/js/orcd.svg)](https://badge.fury.io/js/orcd)
+![CI](https://github.com/ts1/orcd/workflows/CI/badge.svg)
 
-```bash
-bun install
+OPENREC.tvコメントダウンローダー
+
+![サンプル画像](https://github.com/ts1/orcd/blob/master/sample.jpg?raw=true)
+
+OPENREC.tvのコメントをニコニコ動画風のASS等の形式で保存することができます。
+
+## ブラウザでの使用方法
+
+下記のコードをURLとしてブックマークを作成してください。
+
+```
+javascript:(s=document.createElement('script')).src='https://unpkg.com/orcd/browser/orcd.js';document.body.append(s)
 ```
 
-To run:
+OPENRECの動画ページで、上記で作成したブックマークをクリックするとASS形式でダウンロードします。
 
-```bash
-bun run index.ts
+以下はコマンドラインの使用法です。
+
+## 必要なもの
+
+- Node.js 10.x以上
+
+## インストール
+
+```
+npm i -g orcd
 ```
 
-This project was created using `bun init` in bun v1.1.40. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+または
+
+```
+yarn global add orcd
+```
+
+## 使い方
+
+### ダウンロード
+
+```
+orcd https://www.openrec.tv/live/...
+```
+
+引数にOPENREC.tvのアーカイブURLを指定します。
+
+コメントのダウンロードに成功するとタイトルと同名のXMLファイルに保存されます。
+
+XMLファイルは Cometan のようなプレイヤーで使用できます。
+
+`-f` オプションを使うと他のフォーマットで保存できます。
+
+
+### 変換
+
+```
+orcd FILE -f FORMAT
+```
+
+XMLまたはJSONで保存したファイルをASS, JSON, XMLのいずれかに変換します。
+
+#### ASSに変換する例
+
+```
+orcd 159.xml -f ass
+```
+
+### その他のオプション
+
+```
+orcd <url|file>
+
+動画のコメントを取得または変換します
+
+位置:
+  url|file  ダウンロードURL、または変換元ファイル                       [文字列]
+
+ASSオプション:
+  -F, --fontname  フォント名                 [文字列] [デフォルト: "MS PGothic"]
+  -s, --fontsize  フォントサイズ(px)                     [数値] [デフォルト: 48]
+  -m, --margin    上下のマージン(px)                      [数値] [デフォルト: 4]
+  -O, --outline   文字のアウトライン(px)                  [数値] [デフォルト: 2]
+  -t, --time      コメント1個の表示時間(秒)               [数値] [デフォルト: 8]
+
+オプション:
+  -v, --version   バージョンを表示                                        [真偽]
+  -d, --delay     時間のずれ(秒)                         [数値] [デフォルト: 10]
+  -R, --norandom  秒以下を乱数化しない                                    [真偽]
+  -f, --format    出力フォーマット
+                    [選択してください: "xml", "ass", "json"] [デフォルト: "xml"]
+  -o, --output    出力ファイル名                   [文字列] [デフォルト: "auto"]
+  -D, --debug     デバッグモード                                          [真偽]
+  -h, --help      ヘルプを表示                                            [真偽]
+```
