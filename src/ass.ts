@@ -1,12 +1,6 @@
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS202: Simplify dynamic range loops
- * DS205: Consider reworking code to avoid use of IIFEs
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/main/docs/suggestions.md
- */
-const DEFAULTS = {
+import type { Chat, Options } from "./types";
+
+const DEFAULTS: Options = {
   font_name: "MS PGothic",
   font_size: 48,
   margin: 4,
@@ -34,7 +28,7 @@ const EVENTS_HEADER = `\
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\
 `;
 
-const build_style = function (opt) {
+const build_style = function (opt: Options) {
   const style = {
     Name: "style",
     Fontname: opt.font_name,
@@ -68,7 +62,7 @@ Style: ${Object.values(style).join(",")}\
 `;
 };
 
-const collision_at_start = function (first, second, opt) {
+const collision_at_start = function (first: Chat, second: Chat, opt: Options) {
   const len = first.message.length * opt.font_size;
   const speed = (WIDTH + len) / (opt.displayed_time * 100);
   const time = second.vpos - first.vpos;
@@ -77,7 +71,7 @@ const collision_at_start = function (first, second, opt) {
   return len + margin - first_pos_when_second_starts;
 };
 
-const collision_at_end = function (first, second, opt) {
+const collision_at_end = function (first: Chat, second: Chat, opt: Options) {
   const first_ends_at = first.vpos + opt.displayed_time * 100;
   const len = second.message.length * opt.font_size;
   const speed = (WIDTH + len) / (opt.displayed_time * 100);
@@ -86,7 +80,7 @@ const collision_at_end = function (first, second, opt) {
   return second_pos_when_first_ends - WIDTH;
 };
 
-const collision = function (first, second, opt) {
+const collision = function (first: Chat | null, second: Chat, opt: Options) {
   if (!first) {
     return 0;
   }
@@ -102,8 +96,8 @@ const collision = function (first, second, opt) {
   }
 };
 
-const to_hms = function (t) {
-  const zerofill = (x) => ("0" + x).substr(-2);
+const to_hms = function (t: number) {
+  const zerofill = (x: number) => ("0" + x).substr(-2);
   const ss = zerofill(t % 100);
   t = Math.floor(t / 100);
   const s = zerofill(t % 60);
@@ -113,37 +107,23 @@ const to_hms = function (t) {
   return `${h}:${m}:${s}.${ss}`;
 };
 
-const build_events = function (list, opt) {
-  let i;
+const build_events = function (list: Chat[], opt: Options) {
   const lineheight = opt.font_size + opt.margin * 2;
   const n_normal_rows = Math.floor((HEIGHT + opt.margin) / lineheight);
   const n_wrap_rows = Math.floor(
     (HEIGHT + opt.margin - lineheight / 2) / lineheight
   );
   const n_rows = n_normal_rows + n_wrap_rows;
-  const item_in_row = (() => {
-    let asc, end, j;
-    const result = [];
-    for (
-      j = 0, i = j, end = n_rows, asc = 0 <= end;
-      asc ? j < end : j > end;
-      asc ? j++ : j--, i = j
-    ) {
-      result.push(null);
-    }
-    return result;
-  })();
+  const item_in_row: Array<Chat | null> = Array.from(
+    { length: n_rows },
+    () => null
+  );
   return list
     .map(function (item, index) {
-      let asc1, end1;
-      let row = null;
+      let row = 0;
       let min_collision = Infinity;
-      for (
-        i = 0, end1 = n_rows, asc1 = 0 <= end1;
-        asc1 ? i < end1 : i > end1;
-        asc1 ? i++ : i--
-      ) {
-        var c = collision(item_in_row[i], item, opt);
+      for (let i = 0; i < n_rows; i++) {
+        const c = collision(item_in_row[i], item, opt);
         if (c <= 0) {
           row = i;
           break;
@@ -188,10 +168,7 @@ const build_events = function (list, opt) {
     .join("\n");
 };
 
-const build = function (list, options) {
-  if (options == null) {
-    options = {};
-  }
+const build = function (list: Chat[], options?: Options) {
   const opt = { ...DEFAULTS, ...options };
   return [
     HEADER,
@@ -201,4 +178,4 @@ const build = function (list, options) {
   ].join("\n");
 };
 
-module.exports = { DEFAULTS, build };
+export { build, DEFAULTS };
