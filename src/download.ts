@@ -17,6 +17,10 @@ export const info_from_url = async function (url: string) {
   return (await get_json("https://kick.com/api/v1/video/" + video_id)) as Video;
 };
 
+const excludeEmote = function (message: string) {
+  return message.replace(/\[emote:.*?\]/g, "");
+};
+
 export const download_comments = async function (
   info: Video,
   show_progress?: (progress: number) => void
@@ -31,27 +35,33 @@ export const download_comments = async function (
     const url =
       `https://kick.com/api/v2/channels/${info.livestream.channel_id}/messages?` +
       `start_time=${t.toISOString()}`;
-    const res = await retry(async () => await get_json(url));
-    const chats: {
-      content: string;
-      created_at: string;
-      id: string;
-      user_id: number;
-    }[] = res.data.messages;
+    const res = await retry(async () => await get_json(url), {
+      retries: 100,
+    });
+    const chats:
+      | {
+          content: string;
+          created_at: string;
+          id: string;
+          user_id: number;
+        }[]
+      | undefined = res?.data?.messages;
     let new_chat = false;
-    for (const chat of chats) {
-      if (ids[chat.id]) {
-        continue;
+    if (chats) {
+      for (const chat of chats) {
+        if (ids[chat.id]) {
+          continue;
+        }
+        ids[chat.id] = true;
+        new_chat = true;
+        posted_at = new Date(chat.created_at);
+        const vpos = (posted_at.getTime() - start_at.getTime()) / 10;
+        if (vpos < 0) {
+          continue;
+        }
+        const user_id = chat.user_id.toString();
+        list.push({ vpos, user_id, message: excludeEmote(chat.content) });
       }
-      ids[chat.id] = true;
-      new_chat = true;
-      posted_at = new Date(chat.created_at);
-      const vpos = (posted_at.getTime() - start_at.getTime()) / 10;
-      if (vpos < 0) {
-        continue;
-      }
-      const user_id = chat.user_id.toString();
-      list.push({ vpos, user_id, message: chat.content });
     }
     t = new Date(t.getTime() + 5000);
     const progress =
@@ -99,26 +109,37 @@ export const download_comments_parallel = async function (info: Video) {
     const url =
       `https://kick.com/api/v2/channels/${info.livestream.channel_id}/messages?` +
       `start_time=${t.toISOString()}`;
-    const res = await retry(async () => await get_json(url));
-    const chats: {
-      content: string;
-      created_at: string;
-      id: string;
-      user_id: number;
-    }[] = res.data.messages;
+    const res = await retry(async () => await get_json(url), {
+      retries: 100,
+    });
+    const chats:
+      | {
+          content: string;
+          created_at: string;
+          id: string;
+          user_id: number;
+        }[]
+      | undefined = res?.data?.messages;
 
-    for (const chat of chats) {
-      if (ids.has(chat.id)) {
-        continue;
+    if (chats) {
+      for (const chat of chats) {
+        if (ids.has(chat.id)) {
+          continue;
+        }
+        ids.add(chat.id);
+        const posted_at = new Date(chat.created_at);
+        const vpos = (posted_at.getTime() - start_at.getTime()) / 10;
+        if (vpos < 0) {
+          continue;
+        }
+        const user_id = chat.user_id.toString();
+        list.push({
+          vpos,
+          posted_at,
+          user_id,
+          message: excludeEmote(chat.content),
+        });
       }
-      ids.add(chat.id);
-      const posted_at = new Date(chat.created_at);
-      const vpos = (posted_at.getTime() - start_at.getTime()) / 10;
-      if (vpos < 0) {
-        continue;
-      }
-      const user_id = chat.user_id.toString();
-      list.push({ vpos, posted_at, user_id, message: chat.content });
     }
   });
 
