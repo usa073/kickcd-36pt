@@ -172,7 +172,7 @@ const build_events = function (list: Chat[], opt: Options) {
     .join("\n");
 };
 
-const build = function (list: Chat[], options?: Options) {
+const build = function (list: Chat[], options?: Record<string, any>) {
   const opt = { ...DEFAULTS, ...options };
   return [
     HEADER,

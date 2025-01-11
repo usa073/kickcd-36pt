@@ -42,7 +42,11 @@ const remove_downloading = function () {
     const info = await info_from_url(window.location.href);
     const comments = await download_comments_parallel(info);
     const randomizedComments = randomize(comments);
-    const ass = build(randomizedComments);
+    const ass = build(randomizedComments, {
+      font_size: 42,
+      displayed_time: 5,
+      outline: 3,
+    });
     save(`${info.livestream.session_title}.ass`, ass);
     return remove_downloading();
   } catch (e) {
