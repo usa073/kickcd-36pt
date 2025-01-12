@@ -60,7 +60,15 @@ export const download_comments = async function (
           continue;
         }
         const user_id = chat.user_id.toString();
-        list.push({ vpos, user_id, message: excludeEmote(chat.content) });
+        const message = excludeEmote(chat.content);
+        if (message) {
+          list.push({
+            vpos,
+            posted_at,
+            user_id,
+            message,
+          });
+        }
       }
     }
     t = new Date(t.getTime() + 5000);
@@ -133,12 +141,15 @@ export const download_comments_parallel = async function (info: Video) {
           continue;
         }
         const user_id = chat.user_id.toString();
-        list.push({
-          vpos,
-          posted_at,
-          user_id,
-          message: excludeEmote(chat.content),
-        });
+        const message = excludeEmote(chat.content);
+        if (message) {
+          list.push({
+            vpos,
+            posted_at,
+            user_id,
+            message,
+          });
+        }
       }
     }
   });
