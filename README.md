@@ -1,22 +1,10 @@
-# kickcd
+# kickcd-36pt
 
-Kick.comコメントダウンローダー
+Kick.comのチャットコメントをASS字幕形式でダウンロードするツール「kickcd」のフォントサイズ36pt版です。
 
-![サンプル画像](sample.jpg)
+## 🔧 使い方
 
-Kick.comのコメントをニコニコ動画風のASS等の形式で保存することができます。
+1. 以下のコードをブックマークとして登録：
 
-## ブラウザでの使用方法
-
-下記のコードをURLとしてブックマークを作成してください。
-
-```
-javascript:(()=>{const e=document.createElement("script");e.type="module";e.src="https://esm.sh/gh/ogawa0071/kickcd";document.body.append(e);})();
-```
-
-Kick.comの動画ページで、上記で作成したブックマークをクリックするとASS形式でダウンロードします。
-
-# License
-
-- License: MIT
-- Fork from: [ts1/orcd](https://github.com/ts1/orcd)
+```javascript
+javascript:(()=>{const e=document.createElement("script");e.type="module";e.src="https://usa073.github.io/kickcd-36pt/kickcd.js";document.body.append(e);})();
