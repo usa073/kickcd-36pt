@@ -43,7 +43,7 @@ const remove_downloading = function () {
     const comments = await download_comments_parallel(info);
     const randomizedComments = randomize(comments);
     const ass = build(randomizedComments, {
-      font_size: 42,
+      font_size: 36,
       displayed_time: 5,
       outline: 3,
     });
